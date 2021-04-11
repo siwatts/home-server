@@ -12,6 +12,7 @@ Drives purchased new by me, for their intended use
 |------|------|----------|------|-----|-----------|
 | A1 | 3.5" int. HDD | Rigel | 4TB | Primary storage drive | N/A |
 | A2 | 2.5" int. SSD | Rigel | ? | OS install + internal storage | N/A |
+| A3 | USB ext. HDD | N/A | 2TB | TBC | N/A |
 
 ## Drives - Condition B
 
