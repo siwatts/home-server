@@ -45,3 +45,22 @@ How-to guide for some common generic tasks
   setup including IDs and servername etc. If re-installing on same machine
   because of OS re-install consider this
 
+## Rip DVDs
+
+- Instructions followed for Ubuntu server 20.04 (orion)
+- [Install libdvdcss](https://help.ubuntu.com/community/RestrictedFormats/PlayingDVDs)
+    - `sudo apt install libdvd-pkg && sudo dpkg-reconfigure libdvd-pkg`
+- Install handbrake
+- Optional, add PPA to get latest
+    - `sudo add-apt-repository ppa:stebbins/handbrake-releases`
+    - `sudo apt-get update`
+- `sudo apt install handbrake-cli`
+- Scan all titles on disk
+    - `HandBrakeCLI -i /dev/cdrom -t 0`
+- Rip using handbrake
+    - `HandBrakeCLI -i /dev/cdrom -o name.mp4 --audio-lang-list eng`
+- List DVD contents quickly
+    - `sudo apt install lsdvd`
+    - `lsdvd`
+- `for i in `seq 4`; do HandBrakeCLI --input /dev/cdrom --title $i --output NameOfDisc_Title$i.mp4; done`
+
