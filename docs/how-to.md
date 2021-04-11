@@ -53,8 +53,8 @@ How-to guide for some common generic tasks
 - Install handbrake
 - Optional, add PPA to get latest
     - `sudo add-apt-repository ppa:stebbins/handbrake-releases`
-    - `sudo apt-get update`
-- `sudo apt install handbrake-cli`
+    - `sudo apt update`
+    - `sudo apt install handbrake-cli`
 - Scan all titles on disk
     - `HandBrakeCLI -i /dev/cdrom -t 0`
 - Rip using handbrake
@@ -63,4 +63,8 @@ How-to guide for some common generic tasks
     - `sudo apt install lsdvd`
     - `lsdvd`
 - `for i in `seq 4`; do HandBrakeCLI --input /dev/cdrom --title $i --output NameOfDisc_Title$i.mp4; done`
+- Set region for DVD drive
+    - `sudo apt install -y regionset`
+    - `sudo regionset /dev/sr0`
+    - Choose region 2 for UK / western Europe
 
