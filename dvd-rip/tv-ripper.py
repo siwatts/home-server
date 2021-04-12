@@ -67,7 +67,7 @@ class Disc:
             if os.path.isfile(output_path):
                 raise IOError("Output file '{}' already exists. Aborting".format(output_path))
             print("Executing command: 'HandBrakeCLI -i {} -o {} -t {} --audio-lang-list eng'".format(self.disc_location, output_path, title))
-            result = subprocess.run(['HandBrakeCLI', '-i', self.disc_location, '-o', output_path, '-t', str(title), '--audio-lang-list', 'eng'])
+            result = subprocess.run(['HandBrakeCLI', '-i', self.disc_location, '-o', output_path, '-t', str(title), '--audio-lang-list', 'eng'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 class DiscsForIngestion:
     def __init__(self, list_of_discs):
@@ -76,8 +76,8 @@ class DiscsForIngestion:
     def ingest_all(self):
         for i in range(0+1,len(self.list_of_discs)+1):
             # +1 for 1-based index
-            print("Ingesting disc {}:".format(i))
             disc = self.list_of_discs[i-1]
+            print("Ingesting disc {} ({}/{}):".format(disc.disc_number, i, len(self.list_of_discs)))
             if not disc.disc_is_avail:
                 print()
                 print("PLEASE INSERT DISC {}".format(i))
@@ -87,7 +87,7 @@ class DiscsForIngestion:
                 disc.disc_is_avail = True
             disc.scan()
             disc.rip()
-            print("Finished ingesting disc {}".format(i))
+            print("Finished ingesting disc {}".format(disc.disc_number))
 
 
 if __name__ == "__main__":
