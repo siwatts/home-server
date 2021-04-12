@@ -47,7 +47,7 @@ How-to guide for some common generic tasks
 
 ## Rip DVDs
 
-- Instructions followed for Ubuntu server 20.04 (orion)
+- Instructions followed for Ubuntu server 20.04 (orion, rigel)
 - [Install libdvdcss](https://help.ubuntu.com/community/RestrictedFormats/PlayingDVDs)
     - `sudo apt install libdvd-pkg && sudo dpkg-reconfigure libdvd-pkg`
 - Install handbrake
@@ -67,6 +67,19 @@ How-to guide for some common generic tasks
     - `sudo apt install -y regionset`
     - `sudo regionset /dev/sr0`
     - Choose region 2 for UK / western Europe
+
+## Mounting Drives
+
+### SSHFS
+
+Fedora:
+- `sudo dnf install -y fuse-sshfs`
+- Recommended not to use root
+- `mkdir -p ~/mnt/mountpoint`
+- `sshfs [user@]host:[dir] mountpount [options]`
+- E.g.
+    - `mkdir -p ~/mnt/rigel_dvd-rips`
+    - `sshfs lefler@rigel:/mnt/rigel_a1/data/media/dvd-rips ~/mnt/rigel_dvd-rips`
 
 ## Misc Server Admin
 
