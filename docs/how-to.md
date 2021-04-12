@@ -68,3 +68,8 @@ How-to guide for some common generic tasks
     - `sudo regionset /dev/sr0`
     - Choose region 2 for UK / western Europe
 
+## Misc Server Admin
+
+- Change `visudo` to vim
+    - `sudo update-alternatives --config editor`
+
