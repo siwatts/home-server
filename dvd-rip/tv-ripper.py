@@ -200,8 +200,9 @@ class DiscSeries:
 if __name__ == "__main__":
     # execute only if run as a script
 
+    this_prog_version = "v1.3"
     print("---------------------")
-    print("TV series Ripper v1.2")
+    print("TV series Ripper {}".format(this_prog_version))
     print("---------------------")
     global_dry_run = True
     hq = True
@@ -212,13 +213,13 @@ if __name__ == "__main__":
     if (hq and superhq):
         raise ValueError("Must choose either HQ or SuperHQ preset")
     if hq:
-        ep_trail_string = " - {}-v1.2-hq-1080".format(hostname)
+        ep_trail_string = " - {}-{}-hq-1080".format(hostname, this_prog_version)
         print("Using preset: HQ 1080p30 Surround")
     elif superhq:
-        ep_trail_string = " - {}-v1.2-superhq-1080".format(hostname)
+        ep_trail_string = " - {}-{}-superhq-1080".format(hostname, this_prog_version)
         print("Using preset: Super HQ 1080p30 Surround")
     else:
-        ep_trail_string = " - {}-v1.2-fast-1080".format(hostname)
+        ep_trail_string = " - {}-{}-fast-1080".format(hostname, this_prog_version)
         print("Using preset: Fast 1080p30")
     starttime = datetime.datetime.now()
     print("Program start: {}".format(starttime.strftime("%Y/%m/%d %H:%M:%S")))
