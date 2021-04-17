@@ -6,6 +6,7 @@ import subprocess
 import re
 import os.path
 import datetime
+import socket
 
 class Disc:
     def __init__(self, disc_number, season_num, episode_list, starting_episode, output_dir, disc_is_avail=False, disc_location="/dev/dvd", title_indices_override=None):
@@ -96,16 +97,17 @@ class Disc:
                 else:
                     result = subprocess.run(['HandBrakeCLI', '--min-duration', '60', '-i', self.disc_location, '-o', output_path, '-t', str(title), '--audio-lang-list', 'eng', '--preset', 'Super HQ 1080p30 Surround'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             else:
-                raise ValueError("Invalid program configuration at 'rip()'")
+                print("Executing command: 'HandBrakeCLI --min-duration 60 -i \"{}\" -o \"{}\" -t {} --audio-lang-list eng' --preset \"Fast 1080p30\"".format(self.disc_location, output_path, title))
+                if global_dry_run:
+                    print("-- DRY RUN --")
+                else:
+                    result = subprocess.run(['HandBrakeCLI', '--min-duration', '60', '-i', self.disc_location, '-o', output_path, '-t', str(title), '--audio-lang-list', 'eng', '--preset', 'Fast 1080p30'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
     def quickscan(self):
         print("Quick scan disc {}...".format(self.disc_number))
         result = subprocess.run(['lsdvd', self.disc_location])
         #result = subprocess.run(['lsdvd', self.disc_location], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-
-
 
 class DiscsForIngestion:
     def __init__(self, list_of_discs, name):
@@ -136,6 +138,64 @@ class DiscsForIngestion:
 
         print("Finished ingestion of '{}' at {}".format(self.name, datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")))
 
+    def rip_all(self):
+        print("Begin rip of '{}' at {}".format(self.name, datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")))
+
+        for i in range(0+1,len(self.list_of_discs)+1):
+            # +1 for 1-based index
+            disc = self.list_of_discs[i-1]
+            print("Ripping disc {} ({}/{}) of '{}':".format(disc.disc_number, i, len(self.list_of_discs), self.name))
+            if not disc.disc_is_avail:
+                print()
+                print("PLEASE INSERT DISC {} ({}/{})".format(disc.disc_number, i, len(self.list_of_discs)))
+                input("Press ENTER when ready... ")
+                print()
+                # Now assume disc is changed and ready
+                disc.disc_is_avail = True
+            if quickscan:
+                disc.quickscan()
+            else:
+                disc.rip()
+            print("Finished ripping disc {}".format(disc.disc_number))
+
+        print("Finished ripping of '{}' at {}".format(self.name, datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")))
+
+class DiscSeries:
+    # To be used to build DiscsForIngestion class, only when all discs are available (ie. scanned onto HDD as .iso)
+    def __init__(self, friendly_name, season_no, input_directory, output_directory):
+        # Param
+        self.friendly_name = friendly_name
+        self.input_directory = input_directory
+        self.output_directory = output_directory
+        self.season_no = season_no
+        # Member
+        self.disc_list = []
+        self.discs_for_ingestion = None
+        self.nextepisode = 1
+
+    def add_disc(self, filename, disc_number, episode_list, title_override, first_ep_override=None):
+        if (first_ep_override != None):
+            first_ep = first_ep_override
+        else:
+            first_ep = self.nextepisode
+        input_filepath = os.path.join(self.input_directory, filename)
+        thisdisc = Disc(disc_number, self.season_no, episode_list, first_ep, self.output_directory, True, input_filepath, title_override)
+        if title_override != None:
+            thisdisc.override_title_indices(title_override)
+        self.disc_list.append(thisdisc)
+        self.nextepisode = thisdisc.next_disc_starting_episode
+
+    def rip_all(self):
+        if self.discs_for_ingestion == None:
+            self.discs_for_ingestion = DiscsForIngestion(self.disc_list, self.friendly_name)
+
+        self.discs_for_ingestion.rip_all()
+
+    def ingest_all(self):
+        if self.discs_for_ingestion == None:
+            self.discs_for_ingestion = DiscsForIngestion(self.disc_list, self.friendly_name)
+
+        self.discs_for_ingestion.ingest_all()
 
 if __name__ == "__main__":
     # execute only if run as a script
@@ -143,16 +203,23 @@ if __name__ == "__main__":
     print("---------------------")
     print("TV series Ripper v1.2")
     print("---------------------")
-    global_dry_run = False
+    global_dry_run = True
     hq = True
     superhq = False
     quickscan = False
-    if (hq and superhq) or ((not hq) and (not superhq)):
+    hostname = socket.gethostname()
+    print("Hostname: {}".format(hostname))
+    if (hq and superhq):
         raise ValueError("Must choose either HQ or SuperHQ preset")
     if hq:
-        ep_trail_string = ' - rigel-v1.2-hq-1080'
+        ep_trail_string = " - {}-v1.2-hq-1080".format(hostname)
+        print("Using preset: HQ 1080p30 Surround")
     elif superhq:
-        ep_trail_string = ' - rigel-v1.2-superhq-1080'
+        ep_trail_string = " - {}-v1.2-superhq-1080".format(hostname)
+        print("Using preset: Super HQ 1080p30 Surround")
+    else:
+        ep_trail_string = " - {}-v1.2-fast-1080".format(hostname)
+        print("Using preset: Fast 1080p30")
     starttime = datetime.datetime.now()
     print("Program start: {}".format(starttime.strftime("%Y/%m/%d %H:%M:%S")))
     if global_dry_run:
@@ -164,70 +231,19 @@ if __name__ == "__main__":
     ### SEASON 1 ###################################################################
 
     season = 1
-    output_directory = "/mnt/rigel_a1/data/media/dvd-rips/tng/s01"
-    discs = []
-    discs.append(Disc(1, season, [2,1,1], 1, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s01/s01-disc-1of7.iso"))
-    discs.append(Disc(2, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s01/s01-disc-2of7.iso"))
-    discs.append(Disc(3, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s01/s01-disc-3of7.iso"))
-    discs.append(Disc(4, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s01/s01-disc-4of7.iso"))
-    discs.append(Disc(5, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s01/s01-disc-5of7.iso"))
-    discs.append(Disc(6, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s01/s01-disc-6of7.iso"))
-    discs.append(Disc(7, season, [1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s01/s01-disc-7of7.iso", [1,2]))
+    season_name = "TNG Season 1 TEST"
+    input_directory = "/mnt/rigel_a1/data/media/dvd-rips/tng/s01"
+    output_directory = input_directory
+    series = DiscSeries(season_name, season, input_directory, output_directory)
 
-    season1 = DiscsForIngestion(discs, "TNG Season 1")
-
-    ### SEASON 2 ###################################################################
-
-    season = 2
-    output_directory = "/mnt/rigel_a1/data/media/dvd-rips/tng/s02"
-    discs = []
-    discs.append(Disc(1, season, [1,1,1,1], 1, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s02/s02-disc-1of6.iso"))
-    discs.append(Disc(2, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s02/s02-disc-2of6.iso"))
-    discs.append(Disc(3, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s02/s02-disc-3of6.iso"))
-    discs.append(Disc(4, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s02/s02-disc-4of6.iso"))
-    discs.append(Disc(5, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s02/s02-disc-5of6.iso"))
-    discs.append(Disc(6, season, [1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s02/s02-disc-6of6.iso", [1,2]))
-
-    season2 = DiscsForIngestion(discs, "TNG Season 2")
-
-    ### SEASON 3 ###################################################################
-
-    season = 3
-    output_directory = "/mnt/rigel_a1/data/media/dvd-rips/tng/s03"
-    discs = []
-    discs.append(Disc(1, season, [1,1,1,1], 1, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s03/s03-disc-1of7.iso"))
-    discs.append(Disc(2, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s03/s03-disc-2of7.iso"))
-    discs.append(Disc(3, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s03/s03-disc-3of7.iso"))
-    discs.append(Disc(4, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s03/s03-disc-4of7.iso"))
-    discs.append(Disc(5, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s03/s03-disc-5of7.iso"))
-    discs.append(Disc(6, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s03/s03-disc-6of7.iso"))
-    discs.append(Disc(7, season, [1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s03/s03-disc-7of7.iso", [1,2]))
-
-    season3 = DiscsForIngestion(discs, "TNG Season 3")
-
-    ### SEASON 5 ###################################################################
-
-    season = 5
-    output_directory = "/mnt/rigel_a1/data/media/dvd-rips/tng/s05"
-    discs = []
-    discs.append(Disc(1, season, [1,1,1,1], 1, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-1of7.iso"))
-    discs.append(Disc(2, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-2of7.iso"))
-    discs.append(Disc(3, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-3of7.iso"))
-    discs.append(Disc(4, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-4of7.iso"))
-    discs.append(Disc(5, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-5of7.iso"))
-    discs.append(Disc(6, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-6of7.iso"))
-    discs.append(Disc(7, season, [1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-7of7.iso", [2,3]))
-
-    season5 = DiscsForIngestion(discs, "TNG Season 5")
+    series.add_disc("s01-disc-1of7.iso", 1, [2,1,1], [1,2,3])
+    series.add_disc("s01-disc-2of7.iso", 2, [1,1,1,1], [1,2,3,4])
 
     print("---------------------")
     print("Begin ingestion")
     print("---------------------")
 
-    season1.ingest_all()
-    season2.ingest_all()
-    season3.ingest_all()
-    season5.ingest_all()
+    series.rip_all()
 
     print()
     print("Program complete")
