@@ -28,7 +28,7 @@ class Disc:
         if self.disc_location is None:
             raise ValueError("Cannot scan disc {} yet, no location".format(self.disc_number))
         print("Disk {} is scanning...".format(self.disc_number))
-        result = subprocess.run(['HandBrakeCLI', '-i', self.disc_location, '-t', '0'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = subprocess.run(['HandBrakeCLI', '--min-duration', '60', '-i', self.disc_location, '-t', '0'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         print("Scan complete")
         result = result.stdout.decode('utf-8')
         self.disc_scan_result = result
@@ -79,15 +79,33 @@ class Disc:
                     # Another to follow
                     ep_string = ep_string + "-"
             print("Title {} ({} of {}) - contains episodes '{}'...".format(title, i+1, self.title_count, ep_string))
-            output_name = "s" + f'{self.season_num:02}' + ep_string + ".mp4"
+            output_name = "s" + f'{self.season_num:02}' + ep_string + ep_trail_string + ".mp4"
             output_path = os.path.join(self.output_dir, output_name)
             if os.path.isfile(output_path):
                 raise IOError("Output file '{}' already exists. Aborting".format(output_path))
-            if global_dry_run:
-                print("Dry run, no ripping")
+            if hq:
+                print("Executing command: 'HandBrakeCLI --min-duration 60 -i \"{}\" -o \"{}\" -t {} --audio-lang-list eng' --preset \"HQ 1080p30 Surround\"".format(self.disc_location, output_path, title))
+                if global_dry_run:
+                    print("-- DRY RUN --")
+                else:
+                    result = subprocess.run(['HandBrakeCLI', '--min-duration', '60', '-i', self.disc_location, '-o', output_path, '-t', str(title), '--audio-lang-list', 'eng', '--preset', 'HQ 1080p30 Surround'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            elif superhq:
+                print("Executing command: 'HandBrakeCLI --min-duration 60 -i \"{}\" -o \"{}\" -t {} --audio-lang-list eng' --preset \"Super HQ 1080p30 Surround\"".format(self.disc_location, output_path, title))
+                if global_dry_run:
+                    print("-- DRY RUN --")
+                else:
+                    result = subprocess.run(['HandBrakeCLI', '--min-duration', '60', '-i', self.disc_location, '-o', output_path, '-t', str(title), '--audio-lang-list', 'eng', '--preset', 'Super HQ 1080p30 Surround'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             else:
-                print("Executing command: 'HandBrakeCLI -i {} -o {} -t {} --audio-lang-list eng'".format(self.disc_location, output_path, title))
-                result = subprocess.run(['HandBrakeCLI', '-i', self.disc_location, '-o', output_path, '-t', str(title), '--audio-lang-list', 'eng'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                raise ValueError("Invalid program configuration at 'rip()'")
+
+
+    def quickscan(self):
+        print("Quick scan disc {}...".format(self.disc_number))
+        result = subprocess.run(['lsdvd', self.disc_location])
+        #result = subprocess.run(['lsdvd', self.disc_location], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+
 
 class DiscsForIngestion:
     def __init__(self, list_of_discs, name):
@@ -109,8 +127,11 @@ class DiscsForIngestion:
                 print()
                 # Now assume disc is changed and ready
                 disc.disc_is_avail = True
-            disc.scan()
-            disc.rip()
+            if quickscan:
+                disc.quickscan()
+            else:
+                disc.scan()
+                disc.rip()
             print("Finished ingesting disc {}".format(disc.disc_number))
 
         print("Finished ingestion of '{}' at {}".format(self.name, datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")))
@@ -120,9 +141,18 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     print("---------------------")
-    print("TV series Ripper v1.1")
+    print("TV series Ripper v1.2")
     print("---------------------")
     global_dry_run = False
+    hq = True
+    superhq = False
+    quickscan = False
+    if (hq and superhq) or ((not hq) and (not superhq)):
+        raise ValueError("Must choose either HQ or SuperHQ preset")
+    if hq:
+        ep_trail_string = ' - rigel-v1.2-hq-1080'
+    elif superhq:
+        ep_trail_string = ' - rigel-v1.2-superhq-1080'
     starttime = datetime.datetime.now()
     print("Program start: {}".format(starttime.strftime("%Y/%m/%d %H:%M:%S")))
     if global_dry_run:
@@ -175,6 +205,21 @@ if __name__ == "__main__":
 
     season3 = DiscsForIngestion(discs, "TNG Season 3")
 
+    ### SEASON 5 ###################################################################
+
+    season = 5
+    output_directory = "/mnt/rigel_a1/data/media/dvd-rips/tng/s05"
+    discs = []
+    discs.append(Disc(1, season, [1,1,1,1], 1, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-1of7.iso"))
+    discs.append(Disc(2, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-2of7.iso"))
+    discs.append(Disc(3, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-3of7.iso"))
+    discs.append(Disc(4, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-4of7.iso"))
+    discs.append(Disc(5, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-5of7.iso"))
+    discs.append(Disc(6, season, [1,1,1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-6of7.iso"))
+    discs.append(Disc(7, season, [1,1], discs[-1].next_disc_starting_episode, output_directory, True, "/mnt/rigel_a1/data/media/dvd-rips/tng/s05/s05-disc-7of7.iso", [2,3]))
+
+    season5 = DiscsForIngestion(discs, "TNG Season 5")
+
     print("---------------------")
     print("Begin ingestion")
     print("---------------------")
@@ -182,6 +227,7 @@ if __name__ == "__main__":
     season1.ingest_all()
     season2.ingest_all()
     season3.ingest_all()
+    season5.ingest_all()
 
     print()
     print("Program complete")
@@ -191,4 +237,4 @@ if __name__ == "__main__":
     duration = (endtime - starttime).total_seconds()
     print("  Program start: {}".format(starttime.strftime("%Y/%m/%d %H:%M:%S")))
     print("  Program end  : {}".format(endtime.strftime("%Y/%m/%d %H:%M:%S")))
-    print("  Duration     : {:.0f}d {:.0f}h {:.0f}m {:.0f}s".format(divmod(duration, 86400)[0], divmod(duration, 3600)[0], divmod(duration, 60)[0], divmod(duration, 60)[1]))
+    print("  Duration     : {:.0f}d {:.0f}h {:.0f}m {:.0f}s".format(duration // 86400, (duration // 3600) % 24, (duration // 60) % 60, duration % 60))
