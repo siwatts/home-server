@@ -173,11 +173,17 @@ class DiscSeries:
         self.discs_for_ingestion = None
         self.nextepisode = 1
 
-    def add_disc(self, filename, disc_number, episode_list, title_override, first_ep_override=None):
+    def add_disc(self, filename, disc_number, title_override, episode_list=None, first_ep_override=None):
         if (first_ep_override != None):
             first_ep = first_ep_override
         else:
             first_ep = self.nextepisode
+
+        if episode_list == None:
+            # Episode list not specified, assuming all episodes are 1 unit long
+            # (no composite double episodes in one title)
+            episode_list = [1] * len(title_override)
+
         input_filepath = os.path.join(self.input_directory, filename)
         thisdisc = Disc(disc_number, self.season_no, episode_list, first_ep, self.output_directory, True, input_filepath, title_override)
         if title_override != None:
