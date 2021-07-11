@@ -210,7 +210,7 @@ if __name__ == "__main__":
     print("---------------------")
     print("TV series Ripper {}".format(this_prog_version))
     print("---------------------")
-    global_dry_run = True
+    global_dry_run = False
     hq = True
     superhq = False
     quickscan = False
@@ -235,22 +235,79 @@ if __name__ == "__main__":
         print("Running live. Disc ripping & transcoding enabled")
     print()
 
-    ### SEASON 1 ###################################################################
+#################################################################################
+## tv-ripper-helper.sh session: Tue 20 Apr 19:33:18 BST 2021
+#
+#    season = 5
+#    season_name = 'Simpsons Season 5'
+#    input_directory = ''
+#    output_directory = '/home/simon/mnt/simpsons/Season 05'
+#    series = DiscSeries(season_name, season, input_directory, output_directory)
+#
+#    series.add_disc('s05-disc-1of4.iso', 1, [2,3,4,5,6,])
+#    series.add_disc('s05-disc-2of4.iso', 2, [2,3,4,5,6,7,])
+#    series.add_disc('s05-disc-3of4.iso', 3, [2,3,4,5,6,7,])
+#    series.add_disc('s05-disc-4of4.iso', 4, [2,3,4,5,6,])
+#
+#    series.rip_all()
+#
+#################################################################################
+#
+#################################################################################
+## tv-ripper-helper.sh session: Tue 20 Apr 19:36:14 BST 2021
+#
+#    season = 6
+#    season_name = 'Simpsons Season 6'
+#    input_directory = ''
+#    output_directory = '/home/simon/mnt/simpsons/Season 06'
+#    series = DiscSeries(season_name, season, input_directory, output_directory)
+#
+#    series.add_disc('s06-disc-1of4.iso', 1, [2,3,4,5,6,7,8,])
+#    series.add_disc('s06-disc-2of4.iso', 2, [2,3,4,5,6,7,8,])
+#    series.add_disc('s06-disc-3of4.iso', 3, [2,3,4,5,6,7,8,])
+#    series.add_disc('s06-disc-4of4.iso', 4, [2,3,4,5,])
+#
+#    series.rip_all()
+#
+#################################################################################
 
-    season = 1
-    season_name = "TNG Season 1 TEST"
-    input_directory = "/mnt/rigel_a1/data/media/dvd-rips/tng/s01"
-    output_directory = input_directory
+################################################################################
+# tv-ripper-helper.sh session: Tue 20 Apr 19:38:39 BST 2021
+
+    season = 7
+    season_name = 'Simpsons Season 7'
+    input_directory = '/mnt/rigel_a1/data/media/dvd-rips/simpsons/s07'
+    output_directory = '/mnt/rigel_a1/data/media/tv/The Simpsons/Season 07'
     series = DiscSeries(season_name, season, input_directory, output_directory)
 
-    series.add_disc("s01-disc-1of7.iso", 1, [2,1,1], [1,2,3])
-    series.add_disc("s01-disc-2of7.iso", 2, [1,1,1,1], [1,2,3,4])
-
-    print("---------------------")
-    print("Begin ingestion")
-    print("---------------------")
+    series.add_disc('s07-disc-1of4.iso', 1, [2,3,4,5,6,7,])
+    series.add_disc('s07-disc-2of4.iso', 2, [2,3,4,5,6,7,8,])
+    series.add_disc('s07-disc-3of4.iso', 3, [2,3,4,5,6,7,8,])
+    series.add_disc('s07-disc-4of4.iso', 4, [37,3,4,5,6,])
 
     series.rip_all()
+
+################################################################################
+
+################################################################################
+# tv-ripper-helper.sh session: Tue 20 Apr 19:42:28 BST 2021
+
+    season = 8
+    season_name = 'Simpsons Season 8'
+    input_directory = '/mnt/rigel_a1/data/media/dvd-rips/simpsons/s08'
+    output_directory = '/mnt/rigel_a1/data/media/tv/The Simpsons/Season 08'
+    series = DiscSeries(season_name, season, input_directory, output_directory)
+
+    series.add_disc('s08-disc-1of4.iso', 1, [36,2,3,4,5,37,])
+    series.add_disc('s08-disc-2of4.iso', 2, [2,3,4,5,6,7,8,])
+    series.add_disc('s08-disc-3of4.iso', 3, [2,3,4,5,6,7,8,])
+    series.add_disc('s08-disc-4of4.iso', 4, [5,4,40,6,7,])
+
+    series.rip_all()
+
+################################################################################
+
+    ################### END OF INPUT ###############################################
 
     print()
     print("Program complete")

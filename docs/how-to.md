@@ -45,6 +45,12 @@ How-to guide for some common generic tasks
   setup including IDs and servername etc. If re-installing on same machine
   because of OS re-install consider this
 
+### Add Plug-in
+
+- `/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-ins`
+- `.bundle` here
+- Restart Plex server
+
 ## Rip DVDs
 
 - Instructions followed for Ubuntu server 20.04 (orion, rigel)
@@ -67,6 +73,31 @@ How-to guide for some common generic tasks
     - `sudo apt install -y regionset`
     - `sudo regionset /dev/sr0`
     - Choose region 2 for UK / western Europe
+
+### Dvdbackup
+
+Sometimes discs are hard to backup with `dd` alone, or are corrupt and
+unreadable at a certain point.
+
+The utility `dvdbackup` can have more luck. Currently installed on `orion`
+
+It can pad unreadable sections and handle read errors. For example
+
+```
+Error reading VTS_01_1.VOB at block 160
+padding 352 blocks
+```
+
+Full instructions [here](https://wiki.archlinux.org/title/dvdbackup)
+
+Summary:
+
+```bash
+# -M backup entire DVD structure, into a directory in location ~
+dvdbackup -i /dev/dvd -o ~ -M
+# Make .iso from resulting directory
+mkisofs -dvd-video -udf -o ~/dvd.iso ~/movie_name
+```
 
 ## Mounting Drives
 
