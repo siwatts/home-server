@@ -6,3 +6,12 @@ Host rigel
     HostName 192.168.0.21
     User lefler
     Port 22
+Host ubuntu-test
+    HostName 192.168.122.251
+    User lefler
+    Port 22
+Host vulcan
+    HostName 192.168.0.26
+    User lefler
+    Port 22
+

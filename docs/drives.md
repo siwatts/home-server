@@ -12,11 +12,13 @@ Drives purchased new by me, for their intended use
 |------|------|-------|----------|------|-----|-----------|-------|
 | A1 | 3.5" int. HDD | Seagate Ironwolf NAS | Rigel | 4TB | Primary storage drive | N/A | **Not labelled** |
 | A2 | 2.5" int. SSD | Gigabyte SSD | Rigel | 120GB | OS install + internal storage | N/A | **Not labelled** |
-| A3 | USB ext. HDD | WD Elements | N/A | 2TB | TBC | N/A | |
-| A4 | USB ext. HDD | WD Elements | PS4 | 2TB | PS4 external storage | N/A | |
+| A3 | USB ext. HDD | WD Elements | N/A | 2TB | Supplementary storage. DVD isos archive, obsolete media etc. | N/A | |
+| A4 | USB ext. HDD | WD Elements | N/A | 2TB | Temporary Backup Core Media | N/A | Until Replacement Drive is Sourced for Orion |
 | A5 | 2.5" int. HDD | Seagate BarraCuda 2TB | Rigel | 2TB | Secondary storage (DVD isos) | N/A | |
 | A6 | 2.5" int. HDD | Toshiba L200 PC 2TB | PS4 internal | 2TB | PS4 internal storage | N/A | |
 | A7 | 3.5" int. HDD | Seagate BarraCuda 6TB | Orion | 6TB | Backup mirror to Rigel | N/A | |
+| A8 | 3.5" int. HDD | Seagate Ironwolf NAS | Vulcan | 4TB | Primary storage | N/A | |
+| A9 | 3.5" int. HDD | Seagate Ironwolf NAS | Vulcan | 4TB | Primary storage | N/A | |
 
 ## Drives - Condition B
 

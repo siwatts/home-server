@@ -54,6 +54,8 @@ for i in `seq 1 $NUM_DISCS`; do
                 exit 1
             fi
             echo
+            echo "Pause 30s..."
+            sleep 30s
             echo "Scanning disc $i/$NUM_DISCS..."
             sudo lsdvd || exit 1
             echo "Ripping disc $i/$NUM_DISCS..."
