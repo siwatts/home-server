@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "This will scan discs and build the commands for tv-ripper.py v1.3"
+echo "This will scan discs and build the commands for tv-ripper.py v1.4"
 echo "  Usage: ./tv-ripper-helper.sh COMMAND_OUTPUT_FILE [SEASON NUM] [SEASON NAME] [INPUT_DIR] [OUTPUT_DIR]"
 echo
 
@@ -32,7 +32,6 @@ done
 echo "Input directory (for .iso) - string"
 while [[ -z "$IN_DIR" ]]; do
     read -p '  input_directory = ' IN_DIR
-     = "/mnt/rigel_a1/data/media/dvd-rips/simpsons/s01"
 done
 IN_DIR=$(echo $IN_DIR | sed 's:/*$::')
 echo "Output directory - string"
