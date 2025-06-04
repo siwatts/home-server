@@ -206,7 +206,7 @@ class DiscSeries:
 if __name__ == "__main__":
     # execute only if run as a script
 
-    this_prog_version = "v1.3"
+    this_prog_version = "v1.4"
     print("---------------------")
     print("TV series Ripper {}".format(this_prog_version))
     print("---------------------")
