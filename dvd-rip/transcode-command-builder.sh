@@ -16,39 +16,57 @@ else
 fi
 
 ISO="$1"
+ISO=$(echo $ISO | sed 's:/*$::')
+LOG="${ISO}.log"
 CMDFI="handbrake-jobs.sh"
-OUTDIR="/mnt/rigel_a1/data/media/film"
+OUTDIR="film"
+MEDIA_DIR="/mnt/vulcan_a/data/media"
+
+OUTDIR=$(echo $OUTDIR | sed 's:/*$::')
+MEDIA_DIR=$(echo $MEDIA_DIR | sed 's:/*$::')
 
 if [ ! -f "$CMDFI" ]; then
     echo "Output file '$CMDFI' not found. Creating..."
     echo '#!/bin/bash' > "$CMDFI"
     echo '' >> "$CMDFI"
+    echo "MEDIA_DIR='$MEDIA_DIR'" >> "$CMDFI"
+    echo '' >> "$CMDFI"
     chmod +x "$CMDFI"
 fi
 
-echo "Performing Handbrake scan"
+echo "Performing Handbrake scan..."
 echo "--"
 HandBrakeCLI --min-duration 60 -i "$ISO" -t 0
 echo "--"
-echo "Opening file in VLC"
-vlc "$ISO"
-echo "--"
+read -r -p 'Open file in VLC? ([Y]/n): ' response
+case "$response" in
+    [nN][oO]|[nN])
+        echo "Skipping VLC"
+        ;;
+    *)
+        echo "Opening file in VLC..."
+        echo "--"
+        vlc "$ISO"
+        ;;
+esac
 
 sleep 2s
 echo "--"
 
 # Querying user for details
-read -p "Output directory [$OUTDIR]: " response
+read -p "Output directory (inside '$MEDIA_DIR') [$OUTDIR]: " response
 if [[ ! -z "$response" ]]; then
     OUTDIR="$response"
-    if [ ! -d "$OUTDIR" ]; then
+    OUTDIR=$(echo $OUTDIR | sed 's:/*$::')
+    if [ ! -d "$MEDIA_DIR/$OUTDIR" ]; then
         echo "Directory '$OUTDIR' not found"
         exit 1
     fi
 fi
-if [ -z "$OUTNAME" ]; then
+echo "Output name -> 'Movie Title (YYYY)' without quotes, e.g. Output name: Jurassic Park (1993)"
+while [ -z "$OUTNAME" ]; do
     read -p "Output name: " OUTNAME
-fi
+done
 echo "Choose from quality presets:"
 echo "    1 - SuperHQ 1080"
 echo "    2 - HQ 1080"
@@ -107,13 +125,15 @@ esac
 echo "# '$ISO' - '$OUTNAME'" >> "$CMDFI"
 echo "# Command generated at $(date)" >> "$CMDFI"
 echo "# --------------------------------------------------" >> "$CMDFI"
+echo "echo 'Transcoding \"$ISO\" -> \"$OUTNAME\"...'" >> "$CMDFI"
+echo "echo '    less -RX +F \"$LOG\"'" >> "$CMDFI"
 echo "HandBrakeCLI --min-duration 60 \\" >> "$CMDFI"
 echo "-i \"$ISO\" \\" >> "$CMDFI"
-echo "-o \"$OUTDIR/$OUTNAME - "'${HOSTNAME}'"$SUFFIX\" \\" >> "$CMDFI"
+echo "-o \""'${MEDIA_DIR}'"/$OUTDIR/$OUTNAME - "'${HOSTNAME}'"$SUFFIX\" \\" >> "$CMDFI"
 echo "-t $TITLE \\" >> "$CMDFI"
 echo "--audio-lang-list $LANG \\" >> "$CMDFI"
 echo "--preset \"$PRESET\" \\" >> "$CMDFI"
-echo "$SUBS" >> "$CMDFI"
+echo "$SUBS &> $LOG" >> "$CMDFI"
 echo "# --------------------------------------------------" >> "$CMDFI"
 echo "" >> "$CMDFI"
 

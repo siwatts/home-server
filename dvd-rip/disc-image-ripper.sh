@@ -2,7 +2,7 @@
 # - SW - 11/04/2021 21:31 -
 # Iterate over several discs and rip them one be one to .iso with a suffix number
 echo "----------------------"
-echo "Disc image ripper v1.3"
+echo "Disc image ripper v1.4"
 echo "----------------------"
 echo "Usage: ./disc-image-ripper.sh [NUM_DISCS] [OUTPUT_PREFIX]"
 echo "----------------------"
@@ -57,7 +57,7 @@ for i in `seq 1 $NUM_DISCS`; do
             echo "Pause 30s..."
             sleep 30s
             echo "Scanning disc $i/$NUM_DISCS..."
-            sudo lsdvd || exit 1
+            sudo lsdvd /dev/cdrom || exit 1
             echo "Ripping disc $i/$NUM_DISCS..."
             sudo dd if=/dev/cdrom of="$out" status=progress && sync || exit 1
             sudo chown $USER:$USER "$out"
