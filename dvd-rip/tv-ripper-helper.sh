@@ -2,6 +2,7 @@
 
 echo "This will scan discs and build the commands for tv-ripper.py v1.4"
 echo "  Usage: ./tv-ripper-helper.sh COMMAND_OUTPUT_FILE [SEASON NUM] [SEASON NAME] [INPUT_DIR] [OUTPUT_DIR]"
+echo "  Warning: COMMAND_OUTPUT_FILE must be an absolute path"
 echo
 
 COMMAND_OUTPUT_FILE="$1"
@@ -67,8 +68,8 @@ for f in *.iso; do
     read -r -p 'Open disc in VLC? (y/[N]): ' response
     case "$response" in
         [yY][eE][sS]|[yY])
-            echo "Opening file '$f' in vlc, bg task:"
-            vlc "$f" &
+            echo "Opening file '$f' in vlc:"
+            vlc "$f" &> /dev/null
             ;;
         *)
             ;;
